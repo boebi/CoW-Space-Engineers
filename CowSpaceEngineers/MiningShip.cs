@@ -28,20 +28,31 @@ namespace SpaceEngineers
         //////////////////////////BEGIN//////////////////////////////////////////
 		//////////////// The cockpit has to be called "Drillpit"/////////////////
         //=======================================================================
-
+        private const string CockPitName = "Drillpit";
+        
         private readonly IMyCockpit _helm;
         private List<IMyTerminalBlock> _drills;
         private List<IMyTerminalBlock> _cargoContainers;
         private IMyTextSurface _drillMonitor;
         private IMyTextSurface _cargoMonitor;
+        private IMyTextSurface _thirdMonitor;
 
         public Program()
         {
-            _helm =  GridTerminalSystem.GetBlockWithName("Drillpit") as IMyCockpit;
+            _helm =  GridTerminalSystem.GetBlockWithName(CockPitName) as IMyCockpit;
             Runtime.UpdateFrequency = UpdateFrequency.Update10;
             
             InitializeDrills();
             InitializeCargoContainers();
+            InitializePenis();
+        }
+
+        private void InitializePenis()
+        {
+            _thirdMonitor = _helm.GetSurface(2);
+            _thirdMonitor.FontColor = Color.White;
+            _thirdMonitor.FontSize = 5;
+            _thirdMonitor.Alignment = TextAlignment.CENTER;
         }
 
         private void InitializeDrills()
@@ -68,6 +79,7 @@ namespace SpaceEngineers
         {
             var drillRoundedPercentage = WriteDrillCargoPercentage();
             WriteCargoContainerPercentage(drillRoundedPercentage);
+            _thirdMonitor.WriteText("8======D");
         }
 
         private double WriteDrillCargoPercentage()
