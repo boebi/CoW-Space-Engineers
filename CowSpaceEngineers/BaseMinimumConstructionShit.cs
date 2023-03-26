@@ -31,7 +31,7 @@ namespace SpaceEngineers
         private const string AssemblerName = "Assembler, Primary";
         private const int MinSteelPlates = 4000;
         private const int MinComputers = 300;
-        private const int MinConstructionComponents = 1000;
+        private const int MinConstructionComponents = 2000;
         private const int MinInteriorPlates = 1000;
         private const int MinLargeSteelTube = 400;
         private const int MinMetalGrid = 400;
@@ -46,7 +46,7 @@ namespace SpaceEngineers
         
         public Program()
         {
-            Runtime.UpdateFrequency = UpdateFrequency.Update10;
+            Runtime.UpdateFrequency = UpdateFrequency.Update100;
             _cargoContainers = new List<IMyTerminalBlock>();
             GridTerminalSystem.GetBlocksOfType<IMyCargoContainer>(_cargoContainers);
             _assemblers = new List<IMyAssembler>();
@@ -96,19 +96,21 @@ namespace SpaceEngineers
             inventory /= 1000000;
 
             long queue = 0;
+            long totalQueue = 0;
             foreach (var assembler in _assemblers)
             {
                 var itemsInQueue = new List<MyProductionItem>();
                 assembler.GetQueue(itemsInQueue);
+                totalQueue = itemsInQueue.Count;
                 queue += itemsInQueue.Where(_ => _.BlueprintId == definitionId).Sum(_ => _.Amount.RawValue);
             }
 
             queue = queue / 1000000 - 1;
             var total = inventory + queue;
 
-            if (total < minimum)
+            if (total < minimum && totalQueue == 0)
             {
-                _primaryAssembler.AddQueueItem(definitionId, 1f);
+                _primaryAssembler.AddQueueItem(definitionId, (float)minimum-total);
             }
 
             return inventory;
