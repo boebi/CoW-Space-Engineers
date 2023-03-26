@@ -21,7 +21,7 @@ using VRage.Game.ObjectBuilders.Definitions;
 
 namespace SpaceEngineers
 {
-    public sealed class Program : MyGridProgram
+    public sealed class MiningShip : MyGridProgram
     {
 #endif
         //=======================================================================
@@ -35,7 +35,6 @@ namespace SpaceEngineers
         private List<IMyTerminalBlock> _cargoContainers;
         private IMyTextSurface _drillMonitor;
         private IMyTextSurface _cargoMonitor;
-        private IMyTextSurface _thirdMonitor;
 
         public Program()
         {
@@ -44,15 +43,6 @@ namespace SpaceEngineers
             
             InitializeDrills();
             InitializeCargoContainers();
-            InitializePenis();
-        }
-
-        private void InitializePenis()
-        {
-            _thirdMonitor = _helm.GetSurface(2);
-            _thirdMonitor.FontColor = Color.White;
-            _thirdMonitor.FontSize = 5;
-            _thirdMonitor.Alignment = TextAlignment.CENTER;
         }
 
         private void InitializeDrills()
@@ -77,12 +67,11 @@ namespace SpaceEngineers
 
         public void Main(string argument, UpdateType updateSource)
         {
-            var drillRoundedPercentage = WriteDrillCargoPercentage();
-            WriteCargoContainerPercentage(drillRoundedPercentage);
-            _thirdMonitor.WriteText("8======D");
+            var almostFull = WriteDrillCargoPercentage();
+            WriteCargoContainerPercentage(almostFull);
         }
 
-        private double WriteDrillCargoPercentage()
+        private bool WriteDrillCargoPercentage()
         {
             float totalDrillCapacity = 0;
             float currentDrillCapacity = 0;
@@ -94,15 +83,16 @@ namespace SpaceEngineers
 
             var drillPercentage = 100.0f * currentDrillCapacity / totalDrillCapacity;
             var drillRoundedPercentage = Math.Round(drillPercentage, 0);
-            
-            _drillMonitor.BackgroundColor = drillRoundedPercentage > 85 ? Color.Red : Color.Black;
+
+            var almostFull = drillRoundedPercentage > 85;
+            _drillMonitor.BackgroundColor = almostFull ? Color.Red : Color.Black;
             
             _drillMonitor.WriteText($"Drill\n{drillRoundedPercentage}%");
 
-            return drillRoundedPercentage;
+            return almostFull;
         }
 
-        private void WriteCargoContainerPercentage(double drillRoundedPercentage)
+        private void WriteCargoContainerPercentage(bool almostFull)
         {
             float totalCargoCapacity = 0;
             float currentCargoCapacity = 0;
@@ -115,7 +105,7 @@ namespace SpaceEngineers
             var cargoContainerPercentage = 100.0f * currentCargoCapacity / totalCargoCapacity;
             var cargoContainerRoundedPercentage = Math.Round(cargoContainerPercentage, 0);
             
-            _cargoMonitor.BackgroundColor = drillRoundedPercentage > 85 ? Color.Red : Color.Black;
+            _cargoMonitor.BackgroundColor = almostFull ? Color.Red : Color.Black;
             
             _cargoMonitor.WriteText($"Cargo\n{cargoContainerRoundedPercentage}%");
         }
