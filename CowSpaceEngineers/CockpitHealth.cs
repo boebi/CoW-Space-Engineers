@@ -1,4 +1,4 @@
-﻿#if DEBUG
+#if DEBUG {{{1
 using System;
 using System.Linq;
 using System.Text;
@@ -24,53 +24,48 @@ namespace SpaceEngineers
     public sealed class ProgramTemplate : MyGridProgram
     {
         
-#endif
-       
-        
-        //=======================================================================
-        //////////////////////////BEGIN//////////////////////////////////////////
-        //=======================================================================
+#endif }}}
+//=======================================================================
+//////////////////////////BEGIN//////////////////////////////////////////
+//=======================================================================
+private const string CockPitName = "Fighter Cockpit";
+private IMyTextSurface myscreen;
+private IMyTextSurface cockpitScreen;
+private IMySlimBlock slimCockpit;
+private IMyCockpit fatCockpit;
+private IMyRadioAntenna antenna;
+private Vector3D basePos;
 
-        private IMyTextSurface _monitor;
-        private IMySlimBlock _slimBlock;
-        private const string CockPitName = "Battlepit";
+public Program()
+{
+	Runtime.UpdateFrequency = UpdateFrequency.Update10;
+	myscreen = Me.GetSurface(0);
+	antenna = GridTerminalSystem.GetBlockWithName("Antenna") as IMyRadioAntenna;
+	fatCockpit = GridTerminalSystem.GetBlockWithName(CockPitName) as IMyCockpit;
+	slimCockpit = GetSlimBlockFromFat(fatCockpit);
+	cockpitScreen = fatCockpit.GetSurface(1);
+	cockpitScreen.FontSize = 3.5f;
+	basePos = new Vector3D(0, 0, 0); // base not really here, just a placeholder
+}
 
-        public Program()
-        {
-            Runtime.UpdateFrequency = UpdateFrequency.Update1;
-            var helm = GridTerminalSystem.GetBlockWithName(CockPitName) as IMyCockpit;
-            var helmAsMyTerminalBlock = GridTerminalSystem.GetBlockWithName(CockPitName) as IMyTerminalBlock;
-            _slimBlock = helmAsMyTerminalBlock.CubeGrid.GetCubeBlock(helmAsMyTerminalBlock.Position);
-            _monitor = helm.GetSurface(0);
-            _monitor.FontColor = Color.White;
-            _monitor.FontSize = 5;
-            _monitor.Alignment = TextAlignment.CENTER;
-        }
-        
-        public void Main(string args)
-        {
-            var maxIntegrity = _slimBlock.MaxIntegrity;
-            var buildIntegrity = _slimBlock.BuildIntegrity;
-            var currentDamage = _slimBlock.CurrentDamage;
-            var percentage = (buildIntegrity - currentDamage) / maxIntegrity;
-            var percentageToDisable = 100 * (percentage - 0.4f) / 0.6f; 
-            
-            _monitor.WriteText($"{Math.Round(percentageToDisable, 0)}%");
-        }
-        
-        public void Save()
-        {
-            // Called when the program needs to save its state. Use
-            // this method to save your state to the Storage field
-            // or some other means.
-        
-            // This method is optional and can be removed if not
-            // needed.
-        }
+public void Main(string args)
+{
+	var cockpitHealth = slimCockpit.BuildLevelRatio;
+	var percentageToDisable = Math.Round(100 * (cockpitHealth - 0.4f) / 0.6f, 0);
 
-        //=======================================================================
-        //////////////////////////END////////////////////////////////////////////
-        //=======================================================================
+	var myPos = fatCockpit.GetPosition();
+	var distance = Vector3D.Distance(basePos, myPos);
+	antenna.Radius = (float)(distance + 300);
+	var printDistance = string.Format("{0:0.0}km", distance*0.001);
+
+	cockpitScreen.WriteText($"{percentageToDisable}%\n{printDistance}");
+}
+
+// functions
+IMySlimBlock GetSlimBlockFromFat(IMyTerminalBlock block) { return block.CubeGrid.GetCubeBlock(block.Position); }
+//=======================================================================
+//////////////////////////END////////////////////////////////////////////
+//=======================================================================
 #if DEBUG
     }
 }
