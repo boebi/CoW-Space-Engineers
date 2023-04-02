@@ -45,20 +45,21 @@ public Program()
 	slimCockpit = GetSlimBlockFromFat(fatCockpit);
 	cockpitScreen = fatCockpit.GetSurface(1);
 	cockpitScreen.FontSize = 3.5f;
-	basePos = new Vector3D(0, 0, 0); // base not really here, just a placeholder
+	basePos = new Vector3D(-16600,-5276,3911); // placeholder numbers, plz ignore
 }
 
 public void Main(string args)
 {
-	var cockpitHealth = slimCockpit.BuildLevelRatio;
-	var percentageToDisable = Math.Round(100 * (cockpitHealth - 0.4f) / 0.6f, 0);
+	float cockpitIntegrityRatio = (slimCockpit.BuildIntegrity - slimCockpit.CurrentDamage) / slimCockpit.MaxIntegrity;
+	float percentageToDisable = (cockpitIntegrityRatio - 0.4f) / 0.6f;
 
 	var myPos = fatCockpit.GetPosition();
 	var distance = Vector3D.Distance(basePos, myPos);
 	antenna.Radius = (float)(distance + 300);
-	var printDistance = string.Format("{0:0.0}km", distance*0.001);
 
-	cockpitScreen.WriteText($"{percentageToDisable}%\n{printDistance}");
+	var printHealth = string.Format("{0:0}%", percentageToDisable*100);
+	var printDistance = string.Format("{0:0.0}km", distance*0.001);
+	cockpitScreen.WriteText($"{printHealth}\n{printDistance}");
 }
 
 // functions
