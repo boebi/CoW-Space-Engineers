@@ -27,29 +27,26 @@ namespace SpaceEngineers
 //=======================================================================
 //////////////////////////BEGIN//////////////////////////////////////////
 //=======================================================================
-private IMyTextSurface myScreen;
+//private IMyTextSurface myScreen;
+private IMyPistonBase piston;
 
 public Program()
 {
-	// The constructor, called only once every session and
-	// always before any other method is called. Use it to
-	// initialize your script.
-	myScreen = Me.GetSurface(0);
-	myScreen.ContentType = ContentType.TEXT_AND_IMAGE; // optional, can be initialized manually from control panel in game
-	myScreen.FontSize = 2; // also optional. 1 is fine for large displays, but 2 is better for small grid laptop and cockpit displays
-	myScreen.FontColor = Color.White; // https://github.com/malware-dev/MDK-SE/wiki/VRageMath.Color
-	myScreen.BackgroundColor = Color.Black;
+	//myScreen = Me.GetSurface(0);
+	//myScreen.ContentType = ContentType.TEXT_AND_IMAGE;
+	//myScreen.FontSize = 2;
+	//myScreen.FontColor = Color.White;
+	//myScreen.BackgroundColor = Color.Black;
+
+	piston = GridTerminalSystem.GetBlockWithName("Piston, Welderarray") as IMyPistonBase;
 }
 
 public void Main(string args, UpdateType updateSource)
 {
-	myScreen.WriteText("Hell-o-world!");
-}
+	//myScreen.WriteText($"Welder array\ncontroller 1.0\n\n{args}");
 
-public void Save()
-{
+	piston.Velocity = float.Parse(args);
 }
-
 //=======================================================================
 //////////////////////////END////////////////////////////////////////////
 //=======================================================================
