@@ -57,7 +57,7 @@ public void Main(string argument, UpdateType updateSource)
     var almostFull = drillPercentage > 85;
     _drillMonitor.BackgroundColor = almostFull ? Color.Red : Color.Black;
 
-    _drillMonitor.WriteText($"Drill\n{drillPercentage}\nCargo\n{cargoPercentage}");
+    _drillMonitor.WriteText($"Drill\n{drillPercentage}%\nCargo\n{cargoPercentage}%");
     string storedPower = formatTotalStoredPower();
     _batteryMonitor.WriteText($"batt:\n{storedPower}");
 }
