@@ -44,12 +44,8 @@ public Program() {
 }
 
 public void Main() {
-	string storedPower;
-	if (true) {
-		storedPower = string.Format("{0:0}%", 100f*StoredMWhSum(_batteryList, true)); // percentage
-	} else {
-		storedPower = FormatMWh(StoredMWhSum(_batteryList)); // absolute amount of energy
-	}
+	var storedPower = string.Format("{0:0}%", 100f*StoredMWhSum(_batteryList, true)); // percentage
+	//var storedPower = FormatMWh(StoredMWhSum(_batteryList)); // absolute amount of energy
 	myscreen.WriteText($"batt:\n{storedPower}");
 }
 
