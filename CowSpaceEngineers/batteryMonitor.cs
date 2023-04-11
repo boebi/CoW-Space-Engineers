@@ -26,10 +26,10 @@ namespace SpaceEngineers
         
 #endif }}}
 //=======================================================================
-//////////////////////////BEGIN//////////////////////////////////////////
 //=======================================================================
+///////////////////////## BEGIN ##///////////////////////////////////////
 private IMyTextSurface myscreen;
-private List<IMyBatteryBlock> batteryList;
+private List<IMyBatteryBlock> _batteryList;
 
 public Program() {
 	// Runtime.UpdateFrequency = UpdateFrequency.Update100;
@@ -44,29 +44,39 @@ public Program() {
 }
 
 public void Main() {
-	string storedPower = formatTotalStoredPower();
+	string storedPower;
+	if (true) {
+		storedPower = string.Format("{0:0}%", 100f*StoredMWhSum(_batteryList, true)); // percentage
+	} else {
+		storedPower = FormatMWh(StoredMWhSum(_batteryList)); // absolute amount of energy
+	}
 	myscreen.WriteText($"batt:\n{storedPower}");
 }
 
 private void batteryListInit() {
-	batteryList = new List<IMyBatteryBlock>();
-	GridTerminalSystem.GetBlocksOfType<IMyBatteryBlock>(batteryList);
+	_batteryList = new List<IMyBatteryBlock>();
+	GridTerminalSystem.GetBlocksOfType<IMyBatteryBlock>(_batteryList);
 }
 
-private string formatTotalStoredPower() {
-	float MWhTotal = 0;
-	foreach (var battery in batteryList) {
-		MWhTotal += battery.CurrentStoredPower;
-	}
-
-	if (MWhTotal >= 10.0f) {
-		return string.Format("{0:0.0} MWh", MWhTotal);
+private string FormatMWh(float MWh) {
+	if (MWh >= 10.0f) {
+		return string.Format("{0:0.0} MWh", MWh);
 	} else {
-		return string.Format("{0:0.0} kWh", MWhTotal*1000);
+		return string.Format("{0:0.0} kWh", MWh*1000);
 	}
 }
+
+private float StoredMWhSum(List<IMyBatteryBlock> batteryList, bool returnRatio = false) {
+	float MWhStored = 0;
+	float MWhMax = 0;
+	foreach (var battery in batteryList) {
+		MWhStored += battery.CurrentStoredPower;
+		if (returnRatio) MWhMax += battery.MaxStoredPower;
+	}
+	return returnRatio ? MWhStored/MWhMax : MWhStored;
+}
+///////////////////////## END ##/////////////////////////////////////////
 //=======================================================================
-//////////////////////////END////////////////////////////////////////////
 //=======================================================================
 #if DEBUG
     }
