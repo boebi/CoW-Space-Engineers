@@ -32,11 +32,11 @@ private const string CockPitName = "Fighter Cockpit"; // for debugging purposes
 private IMyTextSurface myScreen;
 private IMyCockpit myCockpit;
 
-private int internalClock = 0;
+private int _internalClock = 0;
 
 private const float sbc_kNtotal = 43.2f;	// needs to be set by a space engineer
 private int sbc_ComputeAlgo = -1;
-private string sbcFormatted = "";
+private string sbc_Formatted = "";
 
 public Program()
 {
@@ -58,22 +58,22 @@ public void Main(string args, UpdateType updateSource)
 {
 	if (updateSource == UpdateType.Trigger) {
 		if (args == "sbc") {
-			sbc_ComputeAlgo = 3;sbcFormatted = "calculating..";
+			sbc_ComputeAlgo = 3;sbc_Formatted = "calculating..";
 		}
 	} else {
-		if ((internalClock = ++internalClock % 10) == 0) {
+		if ((_internalClock = ++_internalClock % 10) == 0) {
 			float velocity = (float)myCockpit.GetShipVelocities().LinearVelocity.Length();
 			if (velocity < 1.0f) {
-				sbcFormatted = "init zero";
+				sbc_Formatted = "init zero";
 				sbc_ComputeAlgo = -1;
 			} else if (sbc_ComputeAlgo == 0) {
-				sbcFormatted = GetFormattedDistanceToStop(myCockpit, velocity);
+				sbc_Formatted = GetFormattedDistanceToStop(myCockpit, velocity);
 			}
 
 			if (sbc_ComputeAlgo > -1) {
 				sbc_ComputeAlgo--;
 			}
-			myScreen.WriteText($"{sbcFormatted}");
+			myScreen.WriteText($"{sbc_Formatted}");
 		}
 	}
 }
@@ -84,7 +84,6 @@ private string GetFormattedDistanceToStop(IMyCockpit controller, float velocity)
 	float secondsToStop = velocity / acceleration;
 	float distanceToStop = secondsToStop * secondsToStop * acceleration * 0.5f;
 	return string.Format("{0:0} m", distanceToStop);
-
 }
 
 ///////////////////////## END ##/////////////////////////////////////////
