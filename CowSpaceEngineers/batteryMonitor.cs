@@ -42,7 +42,7 @@ public Program() {
 }
 
 public void Main() {
-	var storedPower = string.Format("{0:0}%", 100f*StoredMWhSum(_batteryList, true)); // percentage
+	var storedPower = string.Format("{0:0}%", StoredMWhSum(_batteryList, true)); // percentage
 	//var storedPower = FormatMWh(StoredMWhSum(_batteryList)); // absolute amount of energy
 	myscreen.WriteText($"batt:\n{storedPower}");
 }
@@ -59,14 +59,14 @@ private string FormatMWh(float MWh) {
 	}
 }
 
-private float StoredMWhSum(List<IMyBatteryBlock> batteryList, bool returnRatio = false) {
+private float StoredMWhSum(List<IMyBatteryBlock> batteryList, bool returnPercentage = false) {
 	float MWhStored = 0;
 	float MWhMax = 0;
 	foreach (var battery in batteryList) {
 		MWhStored += battery.CurrentStoredPower;
-		if (returnRatio) MWhMax += battery.MaxStoredPower;
+		if (returnPercentage) MWhMax += battery.MaxStoredPower;
 	}
-	return returnRatio ? MWhStored/MWhMax : MWhStored;
+	return returnPercentage ? 100f*MWhStored/MWhMax : MWhStored;
 }
 ///////////////////////## END ##/////////////////////////////////////////
 //=======================================================================

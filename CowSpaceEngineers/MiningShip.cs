@@ -28,9 +28,13 @@ namespace SpaceEngineers
 //=======================================================================
 ///////////////////////## BEGIN ##///////////////////////////////////////
 private const string CockPitName = "Drillpit"; // The cockpit has to be called "Drillpit"
+// sound block needs to be called "Master Caution"
 private const float sbc_kNtotal = 1.0f;	// needs to be set by a space engineer
+private bool _batteryUsePercentage = false;
+private const float BatteryCaution = 0.005f; // MWh or percentage
 
 private readonly IMyCockpit _helm;
+private readonly IMySoundBlock _masterCaution;
 private readonly IMyTextSurface _drillMonitor;
 private readonly IMyTextSurface _batteryMonitor;
 
@@ -41,6 +45,7 @@ private readonly List<IMyBatteryBlock> _batteryList = new List<IMyBatteryBlock>(
 private int _internalClock = 0;
 private int sbc_ComputeAlgo = -1;
 private string sbc_Formatted = "";
+private bool _masterCautionLatch = true;
 
 public Program()
 {
@@ -56,6 +61,12 @@ public Program()
 	} else {
 		myScreen.WriteText("\nDrillpit init OK", true);
 	}
+	_masterCaution = GridTerminalSystem.GetBlockWithName("Master Caution") as IMySoundBlock;
+	if (_masterCaution == null) {
+		myScreen.WriteText("\nMC: FAIL", true);
+	} else {
+		myScreen.WriteText("\nMC init OK", true);
+	}
 	_drillMonitor = _helm.GetSurface(1);
 	_batteryMonitor = _helm.GetSurface(2);
 
@@ -70,11 +81,8 @@ public void Main(string argument, UpdateType updateSource)
 {
 	if (updateSource == UpdateType.Trigger) {
 		switch (argument) {
-			case "mc":
-				// placeholder: reset master caution
-				break;
 			case "sbc":
-				sbc_ComputeAlgo=4;sbc_Formatted="calculating..";
+				sbc_ComputeAlgo=4;sbc_Formatted="calculating...";
 				break;
 		}
 	} else {
@@ -95,22 +103,35 @@ public void Main(string argument, UpdateType updateSource)
 
 			if (sbc_ComputeAlgo > -1) sbc_ComputeAlgo--;
 
-			// myScreen.WriteText($"{sbc_Formatted}");
-			string storedPower = formatTotalStoredPower();
-			_batteryMonitor.WriteText($"batt:\n {storedPower}\nsbc:\n {sbc_Formatted}");
+			float storedPower = StoredMWhSum(_batteryList, _batteryUsePercentage);
+			string powerFormatted = "";
+
+			if (_masterCaution != null) {
+				if (storedPower < BatteryCaution && !_masterCautionLatch) {
+					_masterCautionLatch = true;
+					_masterCaution.Play();
+				} else if (storedPower >= BatteryCaution && _masterCautionLatch) {
+					_masterCautionLatch = false;
+					_masterCaution.Stop();
+
+				}
+				
+			}
+
+			if (_batteryUsePercentage) {
+				powerFormatted = string.Format("{0:0}%", storedPower);
+			} else {
+				powerFormatted = FormatMWh(storedPower);
+			}
+			_batteryMonitor.WriteText($"batt:\n {powerFormatted}\nsbc:\n {sbc_Formatted}");
 
 		}
 	}
 }
 
 private void InitBlockLists() {
-	//_drills = new List<IMyTerminalBlock>();
 	GridTerminalSystem.GetBlocksOfType<IMyShipDrill>(_drills);
-
-	//_cargoContainers = new List<IMyTerminalBlock>();
 	GridTerminalSystem.GetBlocksOfType<IMyCargoContainer>(_cargoContainers);
-
-	//_batteryList = new List<IMyBatteryBlock>();
 	GridTerminalSystem.GetBlocksOfType<IMyBatteryBlock>(_batteryList);
 }
 
@@ -154,17 +175,22 @@ private double CargoContainerPercentage()
 	return Math.Round(cargoContainerPercentage, 0);
 }
 
-private string formatTotalStoredPower() {
-	float MWhTotal = 0;
-	foreach (var battery in _batteryList) {
-		MWhTotal += battery.CurrentStoredPower;
-	}
-
-	if (MWhTotal >= 10.0f) {
-		return string.Format("{0:0.0} MWh", MWhTotal);
+private string FormatMWh(float MWh) {
+	if (MWh >= 10.0f) {
+		return string.Format("{0:0.0} MWh", MWh);
 	} else {
-		return string.Format("{0:0.0} kWh", MWhTotal*1000);
+		return string.Format("{0:0.0} kWh", MWh*1000);
 	}
+}
+
+private float StoredMWhSum(List<IMyBatteryBlock> batteryList, bool returnPercentage = false) {
+	float MWhStored = 0;
+	float MWhMax = 0;
+	foreach (var battery in batteryList) {
+		MWhStored += battery.CurrentStoredPower;
+		if (returnPercentage) MWhMax += battery.MaxStoredPower;
+	}
+	return returnPercentage ? 100f*MWhStored/MWhMax : MWhStored;
 }
 
 private string GetFormattedDistanceToStop(IMyCockpit controller, float velocity) {
