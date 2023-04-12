@@ -26,47 +26,50 @@ namespace SpaceEngineers
         
 #endif }}}
 //=======================================================================
-//////////////////////////BEGIN//////////////////////////////////////////
 //=======================================================================
+///////////////////////## BEGIN ##///////////////////////////////////////
+private readonly List<IMyBatteryBlock> _batteryList = new List<IMyBatteryBlock>();
 private IMyTextSurface myscreen;
-private List<IMyBatteryBlock> batteryList;
 
 public Program() {
 	// Runtime.UpdateFrequency = UpdateFrequency.Update100;
 	// myscreen = (GridTerminalSystem.GetBlockWithName("Cockpit") as IMyTextSurfaceProvider).GetSurface(0);
 	myscreen = Me.GetSurface(0);
-	myscreen.ContentType = ContentType.TEXT_AND_IMAGE; // optional, can be initialized manually from control panel in game
-	myscreen.FontSize = 2; // also optional. 1 is fine for large displays, but 2 is better for small grid laptop and cockpit displays
-	myscreen.BackgroundColor = Color.Black; // also optional
-	myscreen.FontColor = Color.White; // also optional
+	myscreen.ContentType = ContentType.TEXT_AND_IMAGE;
+	myscreen.FontSize = 2;
 
 	batteryListInit();
 }
 
 public void Main() {
-	string storedPower = formatTotalStoredPower();
+	var storedPower = string.Format("{0:0}%", 100f*StoredMWhSum(_batteryList, true)); // percentage
+	//var storedPower = FormatMWh(StoredMWhSum(_batteryList)); // absolute amount of energy
 	myscreen.WriteText($"batt:\n{storedPower}");
 }
 
 private void batteryListInit() {
-	batteryList = new List<IMyBatteryBlock>();
-	GridTerminalSystem.GetBlocksOfType<IMyBatteryBlock>(batteryList);
+	GridTerminalSystem.GetBlocksOfType<IMyBatteryBlock>(_batteryList);
 }
 
-private string formatTotalStoredPower() {
-	float MWhTotal = 0;
-	foreach (var battery in batteryList) {
-		MWhTotal += battery.CurrentStoredPower;
-	}
-
-	if (MWhTotal >= 10.0f) {
-		return string.Format("{0:0.0} MWh", MWhTotal);
+private string FormatMWh(float MWh) {
+	if (MWh >= 10.0f) {
+		return string.Format("{0:0.0} MWh", MWh);
 	} else {
-		return string.Format("{0:0.0} kWh", MWhTotal*1000);
+		return string.Format("{0:0.0} kWh", MWh*1000);
 	}
 }
+
+private float StoredMWhSum(List<IMyBatteryBlock> batteryList, bool returnRatio = false) {
+	float MWhStored = 0;
+	float MWhMax = 0;
+	foreach (var battery in batteryList) {
+		MWhStored += battery.CurrentStoredPower;
+		if (returnRatio) MWhMax += battery.MaxStoredPower;
+	}
+	return returnRatio ? MWhStored/MWhMax : MWhStored;
+}
+///////////////////////## END ##/////////////////////////////////////////
 //=======================================================================
-//////////////////////////END////////////////////////////////////////////
 //=======================================================================
 #if DEBUG
     }
