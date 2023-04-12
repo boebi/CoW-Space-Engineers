@@ -28,17 +28,15 @@ namespace SpaceEngineers
 //=======================================================================
 //=======================================================================
 ///////////////////////## BEGIN ##///////////////////////////////////////
+private readonly List<IMyBatteryBlock> _batteryList = new List<IMyBatteryBlock>();
 private IMyTextSurface myscreen;
-private List<IMyBatteryBlock> _batteryList;
 
 public Program() {
 	// Runtime.UpdateFrequency = UpdateFrequency.Update100;
 	// myscreen = (GridTerminalSystem.GetBlockWithName("Cockpit") as IMyTextSurfaceProvider).GetSurface(0);
 	myscreen = Me.GetSurface(0);
-	myscreen.ContentType = ContentType.TEXT_AND_IMAGE; // optional, can be initialized manually from control panel in game
-	myscreen.FontSize = 2; // also optional. 1 is fine for large displays, but 2 is better for small grid laptop and cockpit displays
-	myscreen.BackgroundColor = Color.Black; // also optional
-	myscreen.FontColor = Color.White; // also optional
+	myscreen.ContentType = ContentType.TEXT_AND_IMAGE;
+	myscreen.FontSize = 2;
 
 	batteryListInit();
 }
@@ -50,7 +48,6 @@ public void Main() {
 }
 
 private void batteryListInit() {
-	_batteryList = new List<IMyBatteryBlock>();
 	GridTerminalSystem.GetBlocksOfType<IMyBatteryBlock>(_batteryList);
 }
 
