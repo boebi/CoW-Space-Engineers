@@ -84,6 +84,9 @@ public void Main(string argument, UpdateType updateSource)
 			case "sbc":
 				sbc_ComputeAlgo=4;sbc_Formatted="calculating...";
 				break;
+			case "bpt":
+				_batteryUsePercentage = _batteryUsePercentage ? false : true;
+				break;
 		}
 	} else {
 		var drillPercentage = DrillCargoPercentage();
